@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    restart: unless-stopped  
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: user_service
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - app-network
+
+  user-service:
+    build: ./user_service
+    container_name: user-service
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./user_service:/app
+      - /app/node_modules
+    networks:
+      - app-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  app-network:
+    driver: bridge
