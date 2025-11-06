@@ -19,11 +19,12 @@ services:
     container_name: user-service
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3001"
     depends_on:
       - mongodb
     environment:
       - NODE_ENV=production
+      - RABBITMQ_URL=amqp://rabbitmq:5672
     volumes:
       - ./user_service:/app
       - /app/node_modules
@@ -40,14 +41,50 @@ services:
       - mongodb
     environment:
       - NODE_ENV=production
+      - RABBITMQ_URL=amqp://rabbitmq:5672
     volumes:
       - ./task_service:/app
       - /app/node_modules
     networks:
       - app-network
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      # Allow guest user to connect from remote hosts
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit loopback_users_ignore true
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app-network
+
+  notification-service:
+    build: ./notification_service
+    container_name: notification-service
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    depends_on:
+      - rabbitmq
+    environment:
+      - NODE_ENV=production
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    volumes:
+      - ./notification_service:/app
+      - /app/node_modules
+    networks:
+      - app-network
+
 volumes:
   mongodb_data:
+  rabbitmq_data:
 
 networks:
   app-network:
