@@ -19,13 +19,29 @@ services:
     container_name: user-service
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "3000:3000"
     depends_on:
       - mongodb
     environment:
       - NODE_ENV=production
     volumes:
       - ./user_service:/app
+      - /app/node_modules
+    networks:
+      - app-network
+
+  task-service:
+    build: ./task_service
+    container_name: task-service
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongodb
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./task_service:/app
       - /app/node_modules
     networks:
       - app-network

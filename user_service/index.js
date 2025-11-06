@@ -5,17 +5,18 @@ const bodyParser = require('body-parser')
 const app = express()
 const port = 3001
 
+// Middleware
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static('public'))
 
+// MongoDB connection
 mongoose
   .connect('mongodb://mongodb:27017/user_service')
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.log(err))
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch(err => console.error('❌ MongoDB connection error:', err))
 
-// user Schema
-
+// User Schema
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -24,7 +25,9 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: true
+      required: true,
+      unique: true, // prevent duplicate emails
+      lowercase: true
     },
     password: {
       type: String,
@@ -36,36 +39,41 @@ const userSchema = new mongoose.Schema(
   }
 )
 
-// model
-
+// Model
 const User = mongoose.model('User', userSchema)
 
+// Get all users
 app.get('/users', async (req, res) => {
   try {
     const users = await User.find({})
-    res.send(users)
-  } catch (e) {
-    res.status(500).send(e)
+    res.status(200).json(users)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
   }
 })
 
+// Create a new user
 app.post('/users', async (req, res) => {
   try {
     const { name, email, password } = req.body
-    // check user exist or not
 
-    const user = await User.findOne({ email })
-    if (user) {
-      return res.status(400).send({ error: 'User already exist' })
+    // Check if user already exists
+    const existingUser = await User.findOne({ email })
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' })
     }
-    // create user
-    const newUser = await User.create({ name, email, password })
-    res.status(201).send(newUser)
-  } catch (e) {
-    res.status(400).send(e)
+
+    // Create new user
+    const newUser = new User({ name, email, password })
+    await newUser.save()
+
+    res.status(201).json(newUser)
+  } catch (error) {
+    res.status(400).json({ error: error.message })
   }
 })
 
+// Start server
 app.listen(port, () => {
-  console.log(`App listening on port ${port}`)
+  console.log(`🚀 App listening on port ${port}`)
 })
