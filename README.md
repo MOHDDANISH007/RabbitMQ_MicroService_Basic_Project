@@ -1,5 +1,7 @@
-<img width="959" height="507" alt="1" src="https://github.com/user-attachments/assets/b9bb3ace-fb8e-4b2b-8c90-57f0af5da6e0" />🚀 Over the past few days, I’ve been learning Microservices, RabbitMQ, and Docker, and I decided to put my knowledge into practice by building a Task Management System.
 
+
+🚀 Over the past few days, I’ve been learning Microservices, RabbitMQ, and Docker, and I decided to put my knowledge into practice by building a Task Management System.                                                                                                                        
+  
 Even though the project is simple, I structured it using modern backend concepts: Microservices, RabbitMQ, and Docker. Each service runs independently and communicates asynchronously, making the system modular, scalable, and resilient.
 
 ✨ Project Highlights:
